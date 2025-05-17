@@ -1,6 +1,8 @@
 from pytubefix import YouTube, Playlist
 import sys
-
+# Run this command to build exe file 
+# 1. pip install pyinstaller
+# 2. pyinstaller --onefile .\youTubeVideoDownload.py 
 def get_resolution_stream(video, quality):
     if quality == "high":
         return video.streams.filter(progressive=True, file_extension='mp4').order_by("resolution").desc().first()
@@ -24,14 +26,7 @@ def download_videos(videos, quality):
         except Exception as e:
             print(f"❌ Error downloading {video.title}: {e}")
 
-def main():
-    print("📥 YouTube Downloader")
-    print("1. Download single video")
-    print("2. Download full playlist")
-    print("3. Download partial playlist")
-    
-    option = input("Choose an option (1/2/3): ").strip()
-
+def get_quality(): 
     # Quality Selection
     print("\nSelect resolution:")
     print("1. High (1080p/highest)")
@@ -43,45 +38,72 @@ def main():
     quality = quality_map.get(res_option)
     if not quality:
         print("❌ Invalid resolution choice.")
-        sys.exit()
+        return None
+    return quality
 
-    confirm = input(f"\nYou chose '{quality.upper()}' quality. Proceed with download? (y/n): ").strip().lower()
-    if confirm != 'y':
-        print("❌ Cancelled by user.")
-        sys.exit()
 
-    if option == "1":
-        video_url = input("Enter the YouTube video URL: ").strip()
-        video = YouTube(video_url)
-        download_videos([video], quality)
+def main():
+    print("Welcome To 📥 YouTube Downloader")
+    print("Thanks To Using Nasirul's Apps.\n")
+    while True : 
+        print("1. Download single video")
+        print("2. Download full playlist")
+        print("3. Download partial playlist")
+        print("4. Exit")
+        option = input("Choose an option (1/2/3): ").strip()
 
-    elif option == "2":
-        playlist_url = input("Enter the YouTube playlist URL: ").strip()
-        playlist = Playlist(playlist_url)
-        videos = list(playlist.videos)
-        print(f"📺 Playlist: {playlist.title} | Total videos: {len(videos)}")
-        download_videos(videos, quality)
+        if option == "1":
+            video_url = input("Enter the YouTube video URL: ").strip()
+            try:
+                video = YouTube(video_url)
+                quality = get_quality()
+                if quality==None: 
+                    continue
+                download_videos([video], quality)
+                print("\n🎉 All done!\n")
+            except: 
+                print("Something went wrong,\nPlease give a valid URL")
+        elif option == "2":
+            playlist_url = input("Enter the YouTube playlist URL: ").strip()
+            try:
+                playlist = Playlist(playlist_url) 
+                videos = list(playlist.videos)
+                print(f"📺 Playlist: {playlist.title} | Total videos: {len(videos)}")
+                quality = get_quality()
+                if quality==None: 
+                    continue
+                download_videos(videos, quality)
+                print("\n🎉 All done!\n")
+            except: 
+                print("Something went wrong,\nPlease give a valid URL")
+            
+        elif option == "3":
+            playlist_url = input("Enter the YouTube playlist URL: ").strip()
+            try:
+                playlist = Playlist(playlist_url)
+                videos = list(playlist.videos)
+                print(f"📺 Playlist: {playlist.title} | Total videos: {len(videos)}")
 
-    elif option == "3":
-        playlist_url = input("Enter the YouTube playlist URL: ").strip()
-        playlist = Playlist(playlist_url)
-        videos = list(playlist.videos)
-        print(f"📺 Playlist: {playlist.title} | Total videos: {len(videos)}")
+                start = int(input("Enter start video number (e.g. 1): ")) - 1
+                end = int(input("Enter end video number (e.g. 5): "))
+                if start < 0 or end > len(videos) or start >= end:
+                    print("❌ Invalid range.")
+                    continue
+                    # sys.exit()
 
-        start = int(input("Enter start video number (e.g. 1): ")) - 1
-        end = int(input("Enter end video number (e.g. 5): "))
-        if start < 0 or end > len(videos) or start >= end:
-            print("❌ Invalid range.")
+                selected_videos = videos[start:end]
+                quality = get_quality()
+                if quality==None: 
+                    continue
+                download_videos(selected_videos, quality)
+                print("\n🎉 All done!\n")
+            except: 
+                print("Something went wrong,\nPlease give a valid URL")
+        elif option == "4": 
+            print("Exit option selected.")
             sys.exit()
-
-        selected_videos = videos[start:end]
-        download_videos(selected_videos, quality)
-
-    else:
-        print("❌ Invalid option selected.")
-        sys.exit()
-
-    print("\n🎉 All done!")
-
+        else:
+            print("\nPlease Choose a valid option.")
+        
 if __name__ == "__main__":
     main()
